@@ -8,6 +8,7 @@ class App extends Component {
     name: [],
     venue: [],
     info: [],
+    location: [],
     temp: [],
     weather: [],
     high: [],
@@ -22,35 +23,32 @@ class App extends Component {
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
     const dataEvents = await body['events'];
-    const page = await dataEvents['page'];
-    const totalElements = await page['totalElements'];
-    if ( totalElements === 0 ) {
+    const numberEvents = await dataEvents['events']
+    if ( numberEvents === 0 ) {
       this.setState({ events: 'No events'});
     } else {
-      var names = [];
-      var venues = [];
-      var urls = [];
-      const embedded = await dataEvents['_embedded'];
-      const events = await embedded['events'];
-      for (let i = 0; i < events.length; i++) {
-        names.push(events[i]['name']);
-        venues.push(events[i]['_embedded']['venues'][0]['name']);
-        urls.push(events[i]['url']);
-      }
+      const names = dataEvents['names'];
+      const venues = dataEvents['venue'];
+      const urls = dataEvents['url'];
+      const locations = dataEvents['locations']
+
       this.setState({ name: names });
       this.setState({ venue: venues });
       this.setState({ info: urls })
+      this.setState({ location: locations })
       this.setState({ events: 'See event details below:'});
     };
+
     const dataWeather = await body['weather'];
-    const weather = await dataWeather['weather'][0]['main'];
-    const temp = await dataWeather['main']['temp'];
-    const high = await dataWeather['main']['temp_max'];
-    const low = await dataWeather['main']['temp_min'];
-    this.setState({ temp: temp })
-    this.setState({ weather: weather })
-    this.setState({ high: high })
-    this.setState({ low: low })
+    const weather = await dataWeather['current_weather'];
+    const temp = await dataWeather['current_temp'];
+    const high = await dataWeather['current_high'];
+    const low = await dataWeather['current_low'];
+
+    this.setState({ temp: temp });
+    this.setState({ weather: weather });
+    this.setState({ high: high });
+    this.setState({ low: low });
   }
 
   render() {
@@ -67,6 +65,7 @@ class App extends Component {
             <td>Event Name:</td>
             <td>Venue:</td>
             <td>Link for more info:</td>
+            <td>Location:</td>
           </tr>
           <tr>
             <td>
@@ -92,6 +91,15 @@ class App extends Component {
                 <tr>
                   <td class='item'>
                     <a href={item}>{item}</a>
+                  </td>
+                </tr>
+              ))}
+            </td>
+            <td>
+              {this.state.venue.map(item => (
+                <tr>
+                  <td class='item'>
+                    {item}
                   </td>
                 </tr>
               ))}
